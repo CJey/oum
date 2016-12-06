@@ -26,6 +26,17 @@ set -e
 _ROOT="$(pwd)" && cd "$(dirname "$0")" && ROOT="$(pwd)"
 
 MARK_NAT=0x80000000
+CTRL="$1"
+
+case "$CTRL" in
+"")
+    ;;
+"clean")
+    ;;
+*)
+    echo "$0 [clean|help]"
+    ;;
+esac
 
 ipset_clean() {
     ipset list -n | xargs -I{} ipset destroy {}
@@ -158,18 +169,20 @@ __traffic_from_sample() {
 # clean iptables first, then clean ipset
 iptables_clean
 ipset_clean
+[ "$1" = "clean" ] && exit
 
 # install base iptables skeleton
 iptables_init
 #--------------------------------------------------
 
 #@@@@@@@@@@@@@@@@@@ <Customize> @@@@@@@@@@@@@@@@@@@
-# Define sets first
+
 #define_ipset <set name> cidr ...
 #define_ipset_from_file <set name> <cidrs list file path, one cidr one line>
 
+# WARNING!!! Define sets first
 define_ipset vpn      192.168.94.0/24
-define_ipset localnet 192.168.1.0/24
+define_ipset localnet 192.168.0.0/24 192.168.1.0/24
 #--------------------------------------------------
 # Rules
 #traffic_from_ipset <set name> <callback, func or executable>

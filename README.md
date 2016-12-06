@@ -66,8 +66,8 @@ Used at openvpn server configuration, like this:
 
 ```bash
 up '/usr/local/bin/oum hook'
-auth-user-pass-verify '/usr/local/bin/oum hook --sameip 1296000 --samecity 604800' via-env
-client-connect '/usr/local/bin/oum hook --gateway 192.168.94.1 --dns 192.168.94.1'
+auth-user-pass-verify '/usr/local/bin/oum hook' via-env
+client-connect '/usr/local/bin/oum hook'
 client-disconnect '/usr/local/bin/oum hook'
 down '/usr/local/bin/oum hook'
 ```

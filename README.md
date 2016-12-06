@@ -10,6 +10,8 @@ Compile: ./build oum
 
 Run: ./bin/oum
 
+Install: cp bin/oum /usr/local/bin/
+
 ## Summary
 
 Begin with oum, just follow `oum guide`

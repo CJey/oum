@@ -44,7 +44,7 @@ func guide() {
 	fmt.Printf("4. cjey login, when ask for username/password, get the otp code, then input username <cjey> and the password <otp code>\n")
 	fmt.Printf("\n")
 
-	fmt.Printf("[Add Client - by gui\n")
+	fmt.Printf("[Add Client - by gui]\n")
 	fmt.Printf("1. oum web\n")
 	fmt.Printf("2. let user cjey access the web served by oum\n")
 	fmt.Printf("3. download configuration file from the web, and import the file\n")

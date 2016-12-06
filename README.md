@@ -84,7 +84,7 @@ down '/usr/local/bin/oum hook'
 
 ## Serving
 
-By config `oum serv`, oum can disconnect connection of device, and distrbute openvpn client configuration by `oum web`
+By config `oum serv`, oum can disconnect connection of device, and distribute openvpn client configuration by `oum web`
 
 * oum serv add `<conffile>`
 
@@ -100,7 +100,7 @@ By config `oum serv`, oum can disconnect connection of device, and distrbute ope
 
 ## Helper
 
-All subcommand below are optional, but sometimes usefull
+All subcommand below are optional, but sometimes useful
 
 * oum guide
 

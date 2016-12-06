@@ -45,6 +45,23 @@ var List struct {
 	Usernames []string
 }
 
+var Set struct {
+	FullCommand string
+
+	Username    string
+	AllowNet    string
+	AllowDomain string
+	AllowCity   string
+	IPsetAssign string
+	IPsetAccess string
+}
+
+var Show struct {
+	FullCommand string
+
+	Username string
+}
+
 var Reset struct {
 	FullCommand string
 
@@ -191,7 +208,29 @@ func parseFlags() {
 	cmdAdd.Arg("password", "which password do you want to set, when add new device, password will be ignored").
 		StringVar(&Add.Password)
 
-		// reset
+		// set
+	cmdSet := kingpin.Command("set", "Update user config")
+	Set.FullCommand = cmdSet.FullCommand()
+	cmdSet.Arg("username", "which username do you want update").
+		StringVar(&Set.Username)
+	cmdSet.Flag("allow-net", "update allow_net, format: csv, with first char '+' means union, with first char '-' means diff, otherwise means override; as dash '-' is a reserved word, you can given param like this: --allow-net=-192.168.1.0/24").
+		StringVar(&Set.AllowNet)
+	cmdSet.Flag("allow-domain", "update allow_domain, format: ref allow-net").
+		StringVar(&Set.AllowDomain)
+	cmdSet.Flag("allow-city", "update allow_city, format: ref allow-net").
+		StringVar(&Set.AllowCity)
+	cmdSet.Flag("ipset-assign", "update ipset_assign, format: ref allow-net").
+		StringVar(&Set.IPsetAssign)
+	cmdSet.Flag("ipset-access", "update ipset_access, format: ref allow-net").
+		StringVar(&Set.IPsetAccess)
+
+		// show
+	cmdShow := kingpin.Command("show", "Show user config")
+	Show.FullCommand = cmdShow.FullCommand()
+	cmdShow.Arg("username", "which username do you want show").
+		StringVar(&Show.Username)
+
+	// reset
 	cmdReset := kingpin.Command("reset", "Reset user password")
 	Reset.FullCommand = cmdReset.FullCommand()
 	cmdReset.Flag("disable-otp", "do not generate otp secret").BoolVar(&Reset.DisableOTP)

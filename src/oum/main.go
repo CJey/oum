@@ -68,6 +68,16 @@ func main() {
 			conf.Reset.DisableOTP,
 			conf.Reset.RandomPass,
 		)
+	case conf.Set.FullCommand:
+		config := make(map[string]string)
+		config["allow-net"] = conf.Set.AllowNet
+		config["allow-domain"] = conf.Set.AllowDomain
+		config["allow-city"] = conf.Set.AllowCity
+		config["ipset-assign"] = conf.Set.IPsetAssign
+		config["ipset-access"] = conf.Set.IPsetAccess
+		user.Set(conf.Set.Username, config)
+	case conf.Show.FullCommand:
+		user.Show(conf.Show.Username)
 	case conf.Enable.FullCommand:
 		user.Enable(conf.Enable.Username)
 	case conf.Disable.FullCommand:

@@ -65,6 +65,12 @@ Oum encourage using OTP Code to verify
 Used at openvpn server configuration, like this:
 
 ```bash
+# use setenv to control oum
+#setenv oum_sameip   1296000 # 15days
+#setenv oum_samecity 604800 # 7days
+#setenv oum_gateway  192.168.94.1
+#setenv oum_dns      192.168.94.1 # support csv
+
 up '/usr/local/bin/oum hook'
 auth-user-pass-verify '/usr/local/bin/oum hook' via-env
 client-connect '/usr/local/bin/oum hook'
@@ -72,7 +78,7 @@ client-disconnect '/usr/local/bin/oum hook'
 down '/usr/local/bin/oum hook'
 ```
 
-* oum hook `[<flags>] [<args>...]`
+* oum hook `[<args>...]`
 
     Working as openvpn hook scripts
 

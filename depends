@@ -1,0 +1,61 @@
+# dependency packages
+# url[, depend flag]]
+#   url: http, https, ssh
+#   depend flag: branch or commit or branch:commit.
+#     commit must be full size hash string
+#     if given nothing, follow the latest origin/HEAD code
+#     if branch given, follow the latest specified branch code
+#     if commit given, just checkout the specified commit code
+#     if branch:commit given, like commit given, just checkout the specified commit code, the branch part will be treated as a following flag, will be used by other scripts. NOTICE: branchA:branchB is allowed
+
+# example:
+# follow branch origin/HEAD
+# https://github.com/cjey/slog
+# if branchs contain 'origin/master', then follow branch origin/master, otherwise, use 'master' as commit
+# https://github.com/cjey/slog, master
+# use commit: acf733a0a2497828057dd7e4e8e62bb5542ee3ea
+# https://github.com/cjey/slog, master:acf733a0a2497828057dd7e4e8e62bb5542ee3ea
+# follow branch master
+# https://github.com/cjey/slog, master:
+# use commit: acf733a0a2497828057dd7e4e8e62bb5542ee3ea
+# https://github.com/cjey/slog, :acf733a0a2497828057dd7e4e8e62bb5542ee3ea
+# use go get to get the repo
+# golang.org/x/net
+
+# >>> DATABASE
+# A MySQL-Driver for Go's database/sql package
+#https://github.com/go-sql-driver/mysql
+
+# sqlite3 depends
+golang.org/x/net
+# sqlite3 driver conforming to the built-in database/sql interface
+https://github.com/mattn/go-sqlite3
+
+# go-bindata
+https://github.com/jteeuwen/go-bindata
+
+# go-simplejson
+https://github.com/bitly/go-simplejson
+
+# MySQL Server Error Constants
+#https://github.com/VividCortex/mysqlerr
+
+# Redigo is a Go client for the Redis database
+#https://github.com/garyburd/redigo
+
+# >>> Command line
+# Go's text/template package with newline elision
+https://github.com/alecthomas/template
+# Units - Helpful unit multipliers and functions for Go
+https://github.com/alecthomas/units
+# Kingpin - A Go (golang) command line and flag parser
+https://github.com/alecthomas/kingpin
+
+# >>> OTP
+# This is a package for GO which can be used to create different types of barcodes
+https://github.com/boombuler/barcode
+# One Time Password utilities Go / Golang
+https://github.com/pquerna/otp
+
+# A syslog style like package for golang
+https://github.com/cjey/slog

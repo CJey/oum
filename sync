@@ -1,0 +1,208 @@
+#! /bin/sh
+
+_ROOT="$(pwd)" && cd "$(dirname "$0")" && ROOT="$(pwd)"
+export GOPATH=$ROOT
+
+# change DEVELOP value to 1 to enable develop mode"
+#DEVELOP=1
+
+SRC_ROOT="$ROOT/src"
+DEPENDS_FILE="$ROOT/depends"
+CURRENT_FILE="$ROOT/.depends.current"
+VERBOSE=1
+
+if [ "$DEVELOP" = "1" ]; then
+    WORK_FILE="$DEPENDS_FILE"
+else
+    WORK_FILE="$CURRENT_FILE"
+fi
+
+case "$1" in
+'')
+    :
+;;
+latest)
+    if [ "$DEPENDS_FILE" != "$CURRENT_FILE" ]; then
+        cp "$DEPENDS_FILE" "$CURRENT_FILE"
+    fi
+    WORK_FILE="$DEPENDS_FILE"
+    SYNC_LATEST=1
+;;
+fast)
+    VERBOSE=
+    SYNC_FAST=1
+;;
+force)
+    SYNC_FORCE=1
+;;
+clean)
+    VERBOSE=
+    SYNC_CLEAN=1
+;;
+distclean)
+    SYNC_DISTCLEAN=1
+;;
+*)
+    echo "Usage: $0 [fast|current|force|clean|distclean|help]"
+    echo "       $0           # normal sync, if exists then fetch, otherwise, clone code"
+    echo "       $0 latest    # sync latest code, and generator file $CURRENT_FILE contain latest commit"
+    echo "       $0 help      # show this message"
+    echo "       $0 fast      # quick check dependency is not exists"
+    echo "       $0 force     # remove all dependency sources code before, then sync"
+    echo "       $0 clean     # just clean extra code in souces direcotry"
+    echo "       $0 distclean # remove all dependency sources code"
+    exit
+;;
+esac
+
+if [ ! -f "$WORK_FILE" ]; then
+    echo "ERR: depends file[$WORK_FILE] not exists, you can check latest first"
+    exit 1
+fi
+
+if [ $(tail -c1 "$WORK_FILE"|wc -l) -eq 0 ]; then
+    echo >> "$WORK_FILE"
+fi
+
+trim() {
+    while read l; do
+        echo "$l"|sed -r -e "s/^\s+//" -e "s/\s+$//"
+    done
+}
+
+clean_comment() {
+    while read pkg; do
+        echo "$pkg"|grep -qP '^\s*(#|$)' && continue
+        echo "$pkg"|grep -oP '^[^#]+'
+    done|trim
+}
+
+clean_comment < "$WORK_FILE" | while read pkg; do
+    [ "$pkg" = "," ] && continue
+    _url="$(echo "$pkg"|cut -d',' -f1 -s|trim)"
+    [ -z "$_url" ] && _url=$pkg
+    _goget=
+    _dir="$(echo "$_url"|sed -nr 's;^https?://(.+)$;\1;p')"
+    if [ -z "$_dir" ]; then
+        _dir="$(echo "$_url"|sed -nr 's;^[^@]+@([^:]+):(.+)$;\1/\2;p')"
+        if [ -z "$_dir" ]; then
+            _dir=$_url
+            _goget=1
+            #echo "unsupported repo proto: $_url"
+            #exit 1
+        fi
+    fi
+    _dflag="$(echo "$pkg"|cut -d',' -f2 -s|trim)"
+    if [ -z "$_dflag" -o "$_dflag" = ":" ]; then
+        _branch="HEAD"
+        _commit=
+    else
+        _branch="$(echo "$_dflag"|cut -d':' -f1 -s|trim)"
+        _commit="$(echo "$_dflag"|cut -d':' -f2 -s|trim)"
+    fi
+    _dir="$SRC_ROOT/$_dir"
+
+    [ -n "$SYNC_DISTCLEAN" ] && {
+        rm -rf "$_dir"
+        continue
+    }
+    [ -n "$SYNC_FORCE" ] && rm -rf "$_dir"
+    set -e
+    if [ -d "$_dir/.git" ]; then
+        cd "$_dir"
+        [ -n "$VERBOSE" ] && {
+            [ -z "$SYNC_CLEAN" ] && echo "Syncing $_url" || echo "Cleaning $_url"
+        }
+        if [ -z "$SYNC_FAST" ]; then
+            [ -n "$SYNC_CLEAN" ] && {
+                git reset --hard -q
+                git clean -fdx
+                continue
+            }
+            git fetch
+        fi
+    else
+        rm -rf "$_dir"
+        [ -n "$SYNC_CLEAN" ] && continue
+        [ -n "$VERBOSE" ] && echo "Cloning $_url"
+        if [ -z "$_goget" ]; then
+            mkdir -p "$_dir"
+            git clone "$_url" "$_dir"
+        else
+            err="$(go get -u -d "$_url" 2>&1)" || true
+            if [ -n "$err" ]; then
+                echo -n "$err"|grep -q -F 'no buildable Go source files' || {
+                    echo "$err"
+                    exit 1
+                }
+            fi
+            if [ ! -d "$_dir/.git" ]; then
+                echo "unsupported repo proto: $_url"
+                exit 1
+            fi
+        fi
+        cd "$_dir"
+    fi
+    set +e
+    if [ -z "$_branch$_commit" ]; then
+        if git branch -r | grep -qP '^\s*origin/'$_dflag'(\s*|$)'; then
+            _branch=$_dflag
+        else
+            _commit=$_dflag
+        fi
+    else
+        if [ -n "$_branch" ]; then
+            git branch -r | grep -qP '^\s*origin/'$_branch'(\s*|$)' || {
+                echo "ERR: Branch $_branch not exists"
+                exit 1
+            }
+        fi
+        if [ -n "$_commit" ]; then
+            git branch -r | grep -qP '^\s*origin/'$_commit'(\s*|$)' && {
+                echo "ERR: Commit $_commit matched a branch"
+                exit 1
+            }
+        fi
+    fi
+    if [ -n "$_commit" ]; then
+        [ $(echo -n $_commit|wc -m) -ne 40 ] && {
+            echo "ERR: Invalid commit format, must be full hash"
+            exit 1
+        }
+        git show -n1 --oneline "$_commit" >/dev/null 2>&1 || {
+            echo "ERR: commit $_commit not exists"
+            exit 1
+        }
+    fi
+    if [ -n "$_commit" ]; then
+        [ -n "$VERBOSE" ] && echo "Checkout $_commit from $_url"
+        git checkout -q "$_commit"
+        _latestcommit=$_commit
+    else
+        if [ "$_branch" = "HEAD" ]; then
+            _branch="$(git symbolic-ref refs/remotes/origin/HEAD | cut -d'/' -f4-)"
+        fi
+        [ -n "$VERBOSE" ] && echo "Checkout $_branch from $_url"
+        git branch -l | grep -qF " $_branch" && {
+            git checkout -q $_branch
+            _track="$(git rev-parse --abbrev-ref HEAD@{upstream} 2>/dev/null)"
+            if [ -z "$_track" ]; then
+                [ -z "$VERBOSE" ] && echo "Checkout $_branch from $_url"
+                echo "ERR: branch $_branch already exists, but not tracked"
+                exit 1
+            fi
+            if [ "$_track" != "origin/$_branch" ]; then
+                [ -z "$VERBOSE" ] && echo "Checkout $_branch from $_url"
+                echo "ERR: branch $_branch already exists, but tracked to $_track incorrectly"
+                exit 1
+            fi
+            git merge -q "$_track"
+        } || {
+            git checkout -q -b $_branch "origin/$_branch"
+        }
+        _latestcommit="$(git log -n1 --pretty=format:%H)"
+    fi
+    if [ -n "$SYNC_LATEST" -a "$DEPENDS_FILE" != "$CURRENT_FILE" ]; then
+        sed -i -r 's,^\s*'$_url'\b.*$,'$_url'\, '$_branch':'$_latestcommit',' "$CURRENT_FILE"
+    fi
+done

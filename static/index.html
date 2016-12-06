@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>OUM - OpenVPN User Management</title>
+</head>
+<body>
+<h1>Welcome to OUM(OpenVPN User Management)!</h1>
+    <div>
+        <h3>FreeOTP下载</h3>
+        <div><b>Android</b></div>
+        <div>
+            <a href="https://play.google.com/store/apps/details?id=org.fedorahosted.freeotp" target=_blank>FreeOTP Authenticator</a>
+        </div>
+        <div>
+            <a href="http://www.apkmirror.com/apk/red-hat/freeotp-authenticator/" target=_blank>FreeOTP Authenticator (From apkmirror.com)</a>
+        </div>
+        <div>
+            <a href="https://apkpure.com/freeotp-authenticator/org.fedorahosted.freeotp" target=_blank>FreeOTP Authenticator (From apkpure.com)</a>
+        </div>
+        <p/>
+        <div><b>iOS</b></div>
+        <div>
+            <a href="https://itunes.apple.com/cn/app/freeotp-authenticator/id872559395" target=_blank>FreeOTP Authenticator</a>
+        </div>
+    </div>
+    <div>
+        <h3>用户连接注意事项</h3>
+        <div>0. 最常用的方式即为“用户名+otp code”登录，没有高级需求请务必忽略以下说明，避免产生困惑</div>
+        <div>1. username的表述格式为：[!]&lt;user&gt;[%&lt;device&gt], 感叹号用于告知服务器不要修改本机的默认网关和默认dns, 百分号用于分隔用户和设备, device不指定则表示默认设备（设备名default）</div>
+        <div>2. password的表述格式为：[&lt;otp code&gt;][%&lt;static password&gt;]，支持三种组合，即"仅code", "仅static", "code + static"，OUM默认支持"仅code"，如果用户启用了static，使用static时必须要在static开头加上%</div>
+        <div>3. 同一配置下，同一user的同一device仅允许同时在线一个连接</div>
+        <div>4. 用户默认仅有一个设备，即默认设备default，经管理员许可后，可以创建额外的设备</div>
+        <p />
+        <div><b>Tips:</b></div>
+        <div>1. 关于otp code的有效期：当使用otp code成功登录了一个设备后，这次使用的otp code并不会立即失效，如果下次登录时继续使用同样的otp code，那么：如果下次登录时所用IP地址与本次IP地址相同，则默认15天内有效，如果下次登录时所用IP地址与本次IP地址属于同一城市，则默认7天内有效，这样可以保证在较高安全性的情况下避免频繁的变更otp code</div>
+        <div>2. 关于用户名前的感叹号用法：有些情况下，你可能仅希望连通VPN所在的网络，而不希望VPN自动重定向你系统的默认网关和默认DNS，部分openvpn的客户端上可以通过自定义配置达成这个目的，但并不是所有的客户端都支持这个功能，并且有些客户端看似支持这么做，但实际上却做的不好，在这种情况下，你可以尝试在你登录的username最开头添加一个感叹号!来让服务器帮你做掉这件事情，不过这也不是100%会成功的（大多数情况下可以成功），取决于你所使用的客户端</div>
+    </div>
+    <div>
+        <h3>配置文件下载</h3>
+        <select id="select" onChange='refresh_links()'>
+        </select>
+        <ul id="config">
+        </ul>
+    </div>
+    <div>
+        <h3>客户端程序下载</h3>
+        <h4>Linux</h4>
+        <div><b>Ubuntu Desktop</b>: apt-get install network-manager-openvpn-gnome # then create new connection by import configuration file</div>
+        <p />
+        <div><b>Debian/Ubuntu</b>: apt-get install openvpn</div>
+        <p />
+        <div><b>CentOS/Fedora</b>: yum install openvpn</div>
+        <p />
+        <div><b>OpenWrt</b>: opkg install openvpn-openssl</div>
+        <h4>Windows</h4>
+        <div>
+            <a href="https://www.sparklabs.com/viscosity/download/" target=_blank>Viscosity</a>
+            <span>
+                需要License($9)，使用方便，推荐
+            </span>
+        </div>
+        <p />
+        <div>
+            <a href="https://sourceforge.net/projects/securepoint/" target=_blank>Securepoint SSL VPN Client</a>
+            <span>
+                免费，相比较官方版本更好用，但是有个bug，需要手工调整TAP网卡设备的路由Metric静态值为1才能正确的使用VPN下发的DNS
+            </span>
+        </div>
+        <p />
+        <div>
+            <a href="https://openvpn.net/index.php/download/community-downloads.html" target=_blank>OpenVPN Community</a>
+            <span>
+                免费，官方版本，图形化能力较弱，使用较麻烦，仅支持将配置文件放置到程序安装目录下的config目录内才可以被识别
+            </span>
+        </div>
+        <h4>MacOS</h4>
+        <div>
+            <a href="https://www.sparklabs.com/viscosity/download/" target=_blank>Viscosity</a>
+            <span>
+                需要License($9), 使用方便，推荐
+            </span>
+        </div>
+        <p />
+        <div>
+            <a href="https://tunnelblick.net/downloads.html" target=_blank>Tunnelblick</a>
+            <span>
+                免费
+            </span>
+        </div>
+        <h4>Android</h4>
+        <div>
+            <a href="https://play.google.com/store/apps/details?id=de.blinkt.openvpn" target=_blank>OpenVPN for Android</a>
+            <span>
+                免费，第三方开源软件，比官方客户端好用很多，推荐;
+            </span>
+        </div>
+        <div>
+            <a href="http://www.apkmirror.com/apk/arne-schwabe/openvpn-for-android/" target=_blank>OpenVPN for Android (From apkmirror.com)</a>
+        </div>
+        <div>
+            <a href="https://apkpure.com/openvpn-for-android/de.blinkt.openvpn" target=_blank>OpenVPN for Android (From apkpure.com)</a>
+        </div>
+        <p />
+        <div>
+            <a href="https://play.google.com/store/apps/details?id=net.openvpn.openvpn" target=_blank>OpenVPN Connect</a>
+            <span>
+                免费，官方客户端
+            </span>
+        </div>
+        <div>
+            <a href="http://www.apkmirror.com/apk/openvpn/openvpn-connect/" target=_blank>OpenVPN Connect (From apkmirror.com)</a>
+        </div>
+        <div>
+            <a href="https://apkpure.com/openvpn-connect/net.openvpn.openvpn" target=_blank>OpenVPN Connect (From apkpure.com)</a>
+        </div>
+        <h4>iOS</h4>
+        <div>
+            <a href="https://itunes.apple.com/us/app/openvpn-connect/id590379981" target=_blank>OpenVPN Connect</a>
+            <span>
+                免费，官方客户端，也是唯一可用的客户端，不过该软件没有在中国区上架，需要先注册美国区的iTunes帐号，并使用美国区帐号登录app store，切换app store地区为美国后才可以搜索/下载到
+            </span>
+        </div>
+        <p />
+        <div><b>美国区Apple帐号注册</b></div>
+        <div>如果你拥有国际支付手段，注册美国区的iTunes帐号就非常简单，保证app store当前处于美国区的状态下进行帐号注册即可</div>
+        <div>如果你没有国际支付手段，注册美国区的iTunes帐号就需要取个巧
+        <div>1. 安装iTunes客户端并打开，如果已经登录了iTunes，请先注销帐号</div>
+        <div>2. 保证app store当前处于美国区的状态</div>
+        <div>3. 点击获取任意一款免费应用，触发账户注册指引</div>
+        <div>4. 在上一步的帐号注册指引界面上进行帐号注册即可</div>
+        <p />
+        <div><b>在iOS上共享配置文件也相对麻烦，比较快捷的方法如下</b></div>
+        <div>1. 下载<a href="https://itunes.apple.com/cn/app/hai-tun-liu-lan-qi-ji-su-sou/id453722442" target=_blank>海豚浏览器</a></span></div>
+        <div>2. 使用海豚浏览器打开此页面，长按iOS配置的下载链接，选择另存为后，确定保存</div>
+        <div>3. 在海豚浏览器的下载功能区内找到上一步下载好的文件，使用其他应用程序打开</div>
+        <div>4. 如果你已经安装好了OpenVPN Connect客户端，选择使用该程序打开此配置文件即可</div>
+    </div>
+    <script type="text/javascript">
+    function init_device(devs) {
+        var select = document.getElementById("select")
+        devs.forEach(function(info) {
+            var op = document.createElement("option")
+            op.value = info["dev"]
+            if (info["memo"].length > 0){
+                op.text = info["alias"]+" - "+info["memo"]
+            } else {
+                op.text = info["alias"]
+            }
+            op.setAttribute("alias", info["alias"])
+            select.appendChild(op)
+        })
+        refresh_links()
+    }
+
+    function refresh_links() {
+        var select = document.getElementById("select")
+        var dev = select.value
+        var config = document.getElementById("config")
+        while (config.firstChild) {
+            config.removeChild(config.firstChild)
+        }
+        var oss = [
+            {
+                os: "linux",
+                show: "Linux",
+            },
+            {
+                os: "windows",
+                show: "Windows",
+            },
+            {
+                os: "macos",
+                show: "MacOS",
+            },
+            {
+                os: "android",
+                show: "Android",
+            },
+            {
+                os: "ios",
+                show: "iOS",
+            },
+        ]
+        var alias
+        var ops = select.children
+        for (var i=0; i<ops.length; i++) {
+            if (ops[i].value == dev) {
+                alias = ops[i].getAttribute("alias")
+                break
+            }
+        }
+
+        oss.forEach(function(os) {
+            var li = document.createElement("li")
+            var a = document.createElement("a")
+            a.setAttribute("href", "/download/config?attach=true&os="+os.os+"&dev="+dev+"&name="+alias)
+            a.text = os.show + " - " + alias
+            li.appendChild(a)
+            config.appendChild(li)
+            config.appendChild(document.createElement("p"))
+        })
+    }
+
+    function Ajax(type, url, data, success, failed){
+        // 创建ajax对象
+        var xhr = null;
+        if(window.XMLHttpRequest){
+            xhr = new XMLHttpRequest();
+        } else {
+            xhr = new ActiveXObject('Microsoft.XMLHTTP')
+        }
+
+        var type = type.toUpperCase();
+        // 用于清除缓存
+        var random = Math.random();
+
+        if(typeof data == 'object'){
+            var str = '';
+            for(var key in data){
+                str += key+'='+data[key]+'&';
+            }
+            data = str.replace(/&$/, '');
+        }
+
+        if(type == 'GET'){
+            if(data){
+                xhr.open('GET', url + '?' + data, true);
+            } else {
+                xhr.open('GET', url + '?t=' + random, true);
+            }
+            xhr.send();
+        } else if(type == 'POST'){
+            xhr.open('POST', url, true);
+            // 如果需要像 html 表单那样 POST 数据，请使用 setRequestHeader() 来添加 http 头。
+            xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            xhr.send(data);
+        }
+
+        // 处理返回数据
+        xhr.onreadystatechange = function(){
+            if(xhr.readyState == 4){
+                if(xhr.status == 200){
+                    success(xhr.responseText);
+                } else {
+                    if(failed){
+                        failed(xhr.status);
+                    }
+                }
+            }
+        }
+    }
+
+    Ajax('get', 'api/serv.list', {}, function(data) {
+        data = JSON.parse(data)
+        if (data.code != 0) {
+            console.log(data)
+            return
+        }
+        data = data.data
+        init_device(data.serving)
+    }, function(error) {
+        console.log(error)
+    })
+    </script>
+</body>
+</html>

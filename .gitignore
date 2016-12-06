@@ -1,0 +1,12 @@
+.*.swp
+*~
+.*~
+/bin
+/pkg
+/conf/oum.conf
+/src/github.com/*
+/src/golang.org/*
+/src/webfiles
+
+*.db
+*.tmp

@@ -1,0 +1,177 @@
+#! /bin/sh
+
+if [ -L "$0" ]; then
+    "$(readlink -f "$0")" run "$(basename "$0")" $*
+    exit
+fi
+
+_ROOT="$(pwd)" && cd "$(dirname "$0")" && ROOT="$(pwd)"
+EXE_DEFAULT=/usr/local/go/bin/go
+EXE=go
+VERSION=0.9
+
+if ! which $EXE >/dev/null ; then
+    if [ -x $EXE_DEFAULT ]; then
+        EXE=$EXE_DEFAULT
+    else
+        echo "[Error] go environment not found" >&2
+        exit 1
+    fi
+fi
+
+EXE_VER="$($EXE version|awk '{print $3"-"$4}')"
+
+export GOPATH=$ROOT
+
+readonly EXE ROOT GOPATH
+
+__bindata() {
+    if [ -z "$DEBUGMODE" -o ! -x "$ROOT/bin/go-bindata" ]; then
+        $EXE install -ldflags '-w -s' 'github.com/jteeuwen/go-bindata/go-bindata'
+    fi
+    if [ "$1" = "oum" ]; then
+        pkg=webfiles
+        pkgdir=$ROOT/src/$pkg
+        if [ -z "$DEBUGMODE" ]; then
+            rm -rf $pkgdir && mkdir -p $pkgdir
+            $ROOT/bin/go-bindata -pkg $pkg -o "$pkgdir/asset.go" -prefix $ROOT/static  $ROOT/static/...
+        else
+            rm -f "$pkgdir/asset.go"
+            if [ ! -f "$pkgdir/asset.debug.go" ]; then
+                mkdir -p $pkgdir
+                $ROOT/bin/go-bindata -debug -pkg $pkg -o "$pkgdir/asset.debug.go" -prefix $ROOT/static  $ROOT/static/...
+            fi
+        fi
+    fi
+}
+
+__version() {
+    BUILD_TIME=$(date +%s)
+    if which git > /dev/null && [ -d .git ]; then
+        GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+        GIT_NUMBER=$(git log --oneline | wc -l)
+        GIT_HASH=$(git log -n1 --pretty=format:%h)
+        GIT_HASH_FULL=$(git log -n1 --pretty=format:%H)
+    else
+        GIT_BRANCH="_no_hosting_"
+        GIT_NUMBER=0
+        GIT_HASH=0000000
+        GIT_HASH_FULL=0000000000000000000000000000000000000000
+    fi
+    if [ -z "$VERSION" ]; then
+        VERSION="$GIT_NUMBER.$GIT_HASH"
+    fi
+}
+
+__prepare() {
+    $ROOT/sync fast || exit 1
+    __version
+}
+
+__sync() {
+    cd "$_ROOT"
+    $ROOT/sync $*
+}
+
+__target() {
+    __prepare
+    echo GIT_NUMBER: $GIT_NUMBER
+    echo GIT_HASH:   $GIT_HASH
+    if [ ! -d "src/$1" ]; then
+        echo "ERR: package $1 not found"
+        exit 1
+    fi
+    __bindata $1
+    $EXE install -ldflags "\
+        -w -s \
+        -X version.codeRoot=$GOPATH/src/ \
+        -X version.name=$1 \
+        -X version.version=$VERSION \
+        -X version.gitNumber=$GIT_NUMBER \
+        -X version.gitHash=$GIT_HASH_FULL \
+        -X version.gitBranch=$GIT_BRANCH \
+        -X version.goVersion=$EXE_VER \
+        -X version.buildTime=$BUILD_TIME" $1
+}
+
+__run() {
+    bin=$1
+    if [ -z "$bin" ]; then
+        __help
+        exit 1
+    fi
+    __target $bin
+    [ $? -ne 0 ] && return
+    shift
+    echo
+    if [ "$ROOT" = "$_ROOT" ]; then
+        echo "RUN: bin/$bin $*"
+        echo "--------------------------------------------------"
+        bin/$bin $*
+    else
+        echo "RUN: $ROOT/bin/$bin $*"
+        echo "--------------------------------------------------"
+        cd "$_ROOT"
+        $ROOT/bin/$bin $*
+    fi
+}
+
+__clean() {
+    rm -rf bin pkg
+    $ROOT/sync clean
+}
+
+__distclean() {
+    rm -rf bin pkg
+    $ROOT/sync distclean
+}
+
+__test() {
+    echo "Fake Testing..."
+}
+
+__help() {
+    echo "Usage: $0 [help|prepare|clean|distclean|test|update|<target>]"
+    echo "$0 <target>      # compile <target>"
+    echo "$0 help          # show this message"
+    echo "$0 prepare       # download third party packages, and calculate version number"
+    echo "$0 clean         # remove compiled binaries and lib"
+    echo "$0 distclean     # remove compiled binaries, and remove all downloaded third party packages"
+    echo "$0 sync          # just call script ./sync"
+    echo "$0 test          # do automate code testing"
+    echo "$0 run <target> [args...] # compile <target> and run it"
+}
+
+case "$1" in
+'' | help)
+    __help
+    ;;
+run)
+    echo GOPATH: $ROOT
+    shift
+    DEBUGMODE=1
+    __run $*
+    ;;
+prepare)
+    __prepare
+    echo GIT_NUMBER: $GIT_NUMBER
+    echo GIT_HASH:   $GIT_HASH
+    ;;
+clean)
+    __clean
+    ;;
+distclean)
+    __distclean
+    ;;
+test)
+    shift
+    __test $*
+    ;;
+sync)
+    __sync
+    ;;
+*)
+    echo GOPATH: $ROOT
+    __target $1
+    ;;
+esac

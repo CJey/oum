@@ -24,7 +24,8 @@ func Connect(env map[string]string, dconfPath string) {
 	ifconfig_pool_remote_ip := env["ifconfig_pool_remote_ip"]
 	ifconfig_netmask := env["ifconfig_netmask"]
 	ifconfig_pool_netmask := env["ifconfig_pool_netmask"]
-	ipdot := env["untrusted_ip"]
+	a_ip := env["untrusted_ip"]
+	a_port := env["untrusted_port"]
 
 	f, err := os.OpenFile(dconfPath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0600)
 	if err != nil {
@@ -132,12 +133,12 @@ func Connect(env map[string]string, dconfPath string) {
 		f.WriteString("push 'redirect-gateway'\n")
 	}
 
-	var city, isp string
-	ip := net.ParseIP(ipdot).To4()
+	var a_city, isp string
+	ip := net.ParseIP(a_ip).To4()
 	if ReservedIPv4(ip) == false {
 		iip, err := NewIP(ip)
 		if err == nil {
-			city = iip.City()
+			a_city = iip.City()
 			isp = iip.ISP()
 		}
 	}
@@ -149,10 +150,10 @@ func Connect(env map[string]string, dconfPath string) {
 	defer tx.Rollback()
 	_, err = tx.Exec(`
         insert or replace into active
-            (username,device,cname,ovpn_dev,ip,netmask,access_ip,access_city,access_isp,connect_time)
+            (username,device,cname,ovpn_dev,ip,netmask,access_ip,access_port,access_city,access_isp,connect_time)
         values
-            (?,?,?,?,?,?,?,?,?,datetime('now'))
-    `, name, device, env["common_name"], dev, remote_ip, netmask, ipdot, city, isp)
+            (?,?,?,?,?,?,?,?,?,?,datetime('now'))
+    `, name, device, env["common_name"], dev, remote_ip, netmask, a_ip, a_port, a_city, isp)
 	if err != nil {
 		slog.Emerg(err.Error())
 		os.Exit(1)

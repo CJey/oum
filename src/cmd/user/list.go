@@ -87,14 +87,14 @@ func List(usernames ...string) {
 			}
 
 			sub := ""
-			var dev, ip, netmask, a_ip string
+			var dev, ip, netmask, a_ip, a_port string
 			var ctime time.Time
 			err = DB.QueryRow(`
                 select
-                    ovpn_dev,ip,netmask,access_ip,connect_time
+                    ovpn_dev,ip,netmask,access_ip,access_port,connect_time
                 from active
                 where username=? and device=?
-            `, name, device).Scan(&dev, &ip, &netmask, &a_ip, &ctime)
+            `, name, device).Scan(&dev, &ip, &netmask, &a_ip, &a_port, &ctime)
 			if err != nil && err != sql.ErrNoRows {
 				return err
 			}
@@ -102,7 +102,7 @@ func List(usernames ...string) {
 				pre = "+"
 				ones, _ := net.IPMask(net.ParseIP(netmask).To4()).Size()
 				uptime := (time.Now().Sub(ctime) / time.Second * time.Second).String()
-				sub = fmt.Sprintf(" (%s %s %s/%d %s)", dev, uptime, ip, ones, a_ip)
+				sub = fmt.Sprintf(" (%s %s %s/%d %s:%s)", dev, uptime, ip, ones, a_ip, a_port)
 			}
 
 			uptime_show = (time.Duration(uptime) * time.Second).String()

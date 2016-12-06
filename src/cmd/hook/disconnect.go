@@ -40,12 +40,12 @@ func Disconnect(env map[string]string) {
 	}
 	defer tx.Rollback()
 
-	var remote_ip, netmask, cname, a_ip, a_city, a_isp string
+	var remote_ip, netmask, cname, a_ip, a_port, a_city, a_isp string
 	var ctime time.Time
 	err = tx.QueryRow(`
-        select ip,netmask,cname,access_ip,access_city,access_isp,connect_time from active
+        select ip,netmask,cname,access_ip,access_port,access_city,access_isp,connect_time from active
         where username=? and device=? and ovpn_dev=?
-    `, name, device, dev).Scan(&remote_ip, &netmask, &cname, &a_ip, &a_city, &a_isp, &ctime)
+    `, name, device, dev).Scan(&remote_ip, &netmask, &cname, &a_ip, &a_port, &a_city, &a_isp, &ctime)
 	if err != nil && err != sql.ErrNoRows {
 		slog.Emerg(err.Error())
 		os.Exit(1)
@@ -59,19 +59,19 @@ func Disconnect(env map[string]string) {
         insert into log(
             username,device,cname,ovpn_dev,
             ip,netmask,
-            access_ip,access_city,access_isp,
+            access_ip,access_port,access_city,access_isp,
             connect_time,disconnect_time,
             bytes_sent,bytes_received
         ) values (
             ?, ?, ?, ?,
             ?, ?,
-            ?, ?, ?,
+            ?, ?, ?, ?,
             ?, ?,
             ?, ?
         )
     `, name, device, cname, dev,
 		remote_ip, netmask,
-		a_ip, a_city, a_isp,
+		a_ip, a_port, a_city, a_isp,
 		ctime.Format(utils.TIMEFORMAT), now.Format(utils.TIMEFORMAT),
 		bytes_sent, bytes_received,
 	)

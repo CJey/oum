@@ -34,6 +34,7 @@ func (t tLog) history() map[uint][]string {
 			"ip text not null default ''",
 			"netmask text not null default ''",
 			"access_ip text not null default ''",
+			"access_port text not null default ''",
 			"access_city text not null default ''",
 			"access_isp text not null default ''",
 			"connect_time datetime not null default (datetime('now'))",

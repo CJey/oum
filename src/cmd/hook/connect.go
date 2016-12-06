@@ -14,7 +14,7 @@ import (
 	"github.com/cjey/slog"
 )
 
-func Connect(env map[string]string, defgw, defdns, dconfPath string) {
+func Connect(env map[string]string, dconfPath string) {
 	dev := env["dev"]
 	username := env["username"]
 	if len(username) == 0 {
@@ -81,7 +81,7 @@ func Connect(env map[string]string, defgw, defdns, dconfPath string) {
 		}
 	}
 	if len(gateway) == 0 {
-		if len(defgw) > 0 {
+		if defgw := env["oum_gateway"]; len(defgw) > 0 {
 			gateway = defgw
 		} else {
 			gateway = ifconfig_local
@@ -91,7 +91,7 @@ func Connect(env map[string]string, defgw, defdns, dconfPath string) {
 	if len(dns) > 0 {
 		dnss = utils.CSVSet(dns)
 	} else {
-		if len(defdns) > 0 {
+		if defdns := env["oum_dns"]; len(defdns) > 0 {
 			dnss = utils.CSVSet(defdns)
 		} else {
 			dnss = []string{ifconfig_local}

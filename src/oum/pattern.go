@@ -47,9 +47,15 @@ func getOUM(gw string, quick bool) string {
 			fmt.Printf("%s oum executable file path required\n", errpre)
 			continue
 		}
-		return fmt.Sprintf("up '%s hook'\n", line) +
-			fmt.Sprintf("auth-user-pass-verify '%s hook --sameip 1296000 --samecity 604800' via-env\n", line) +
-			fmt.Sprintf("client-connect '%s hook --gateway %s --dns %s'\n", line, gw, gw) +
+		return fmt.Sprintf("# use setenv to control oum\n") +
+			fmt.Sprintf("#setenv oum_sameip   1296000 # 15days\n") +
+			fmt.Sprintf("#setenv oum_samecity 604800 # 7days\n") +
+			fmt.Sprintf("#setenv oum_gateway  %s\n", gw) +
+			fmt.Sprintf("#setenv oum_dns      %s # support csv\n", gw) +
+			fmt.Sprintf("\n") +
+			fmt.Sprintf("up '%s hook'\n", line) +
+			fmt.Sprintf("auth-user-pass-verify '%s hook' via-env\n", line) +
+			fmt.Sprintf("client-connect '%s hook'\n", line) +
 			fmt.Sprintf("client-disconnect '%s hook'\n", line) +
 			fmt.Sprintf("down '%s hook'\n", line)
 	}

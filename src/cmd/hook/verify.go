@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"net"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -15,7 +16,7 @@ import (
 	"github.com/cjey/slog"
 )
 
-func Verify(env map[string]string, sameip, samecity uint, authPath string) {
+func Verify(env map[string]string, authPath string) {
 	var username, password string
 	if len(authPath) == 0 {
 		username = env["username"]
@@ -167,18 +168,34 @@ func Verify(env map[string]string, sameip, samecity uint, authPath string) {
 		slog.Warningf("Device[%s], OTP Code dismatch", show)
 		return
 	}
+
+	sameip := time.Hour * 24 * 15  // 15days
+	samecity := time.Hour * 24 * 7 // 7days
+	if sec := env["oum_sameip"]; len(sec) > 0 {
+		i, err := strconv.ParseUint(sec, 0, 64)
+		if err == nil {
+			sameip = time.Duration(i) * time.Second
+		}
+	}
+	if sec := env["oum_samecity"]; len(sec) > 0 {
+		i, err := strconv.ParseUint(sec, 0, 64)
+		if err == nil {
+			samecity = time.Duration(i) * time.Second
+		}
+	}
+
 	now := time.Now()
 	switch {
 	case last_ip == ipdot:
 		// same ip
-		if last_time.Add(time.Duration(sameip) * time.Second).Before(now) {
+		if last_time.Add(sameip).Before(now) {
 			slog.Warningf("Device[%s], Last OTP Code failure, expired", show)
 			os.Exit(1)
 		}
 		slog.Infof("Device[%s], Login with same ip[%s]", show, ipdot)
 	case ReservedIPv4(ip):
 		// reserved ip
-		if last_time.Add(time.Duration(sameip) * time.Second).Before(now) {
+		if last_time.Add(sameip).Before(now) {
 			slog.Warningf("Device[%s], Last OTP Code failure, expired", show)
 			os.Exit(1)
 		}
@@ -205,7 +222,7 @@ func Verify(env map[string]string, sameip, samecity uint, authPath string) {
 			os.Exit(1)
 		}
 		if last.SameCity(iplogin) {
-			if last_time.Add(time.Duration(samecity) * time.Second).Before(now) {
+			if last_time.Add(samecity).Before(now) {
 				slog.Warningf("Device[%s], Last OTP Code failure, expired", show)
 				os.Exit(1)
 			}

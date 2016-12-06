@@ -26,11 +26,7 @@ var (
 var Hook struct {
 	FullCommand string
 
-	Gateway  string
-	DNS      string
-	SameIP   uint
-	SameCity uint
-	Args     []string
+	Args []string
 }
 
 var Add struct {
@@ -176,16 +172,6 @@ func parseFlags() {
 	// openvpn hook
 	cmdHook := kingpin.Command("hook", "Working as openvpn hook scripts")
 	Hook.FullCommand = cmdHook.FullCommand()
-	cmdHook.Flag("gateway", "use as default gateway").
-		StringVar(&Hook.Gateway)
-	cmdHook.Flag("dns", "use as default dns, allow more than one, split by comma").
-		StringVar(&Hook.DNS)
-	cmdHook.Flag("sameip", "when login with same ip, how many seconds while the otp_last_code valid, default 15days").
-		Default("1296000").
-		UintVar(&Hook.SameIP)
-	cmdHook.Flag("samecity", "when login with same city, how many seconds while the otp_last_code valid, default 7days").
-		Default("604800").
-		UintVar(&Hook.SameCity)
 	cmdHook.Arg("args", "Args from openvpn").
 		StringsVar(&Hook.Args)
 

@@ -102,7 +102,7 @@ func subHook() {
 			os.Exit(1)
 		}
 		dynpath := conf.Hook.Args[len(conf.Hook.Args)-1]
-		hook.Connect(env, conf.Hook.Gateway, conf.Hook.DNS, dynpath)
+		hook.Connect(env, dynpath)
 	case "client-disconnect":
 		hook.Disconnect(env)
 	case "up":
@@ -111,9 +111,9 @@ func subHook() {
 		hook.Down(env)
 	case "user-pass-verify":
 		if len(conf.Hook.Args) == 0 {
-			hook.Verify(env, conf.Hook.SameIP, conf.Hook.SameCity, "")
+			hook.Verify(env, "")
 		} else {
-			hook.Verify(env, conf.Hook.SameIP, conf.Hook.SameCity, conf.Hook.Args[0])
+			hook.Verify(env, conf.Hook.Args[0])
 		}
 	default:
 		slog.Emerg("should be called by openvpn hook directive")

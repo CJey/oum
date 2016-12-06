@@ -2,7 +2,9 @@ package hook
 
 import (
 	"database/sql"
+	"fmt"
 	"os"
+	"os/exec"
 	"time"
 
 	"cmd/user"
@@ -121,5 +123,22 @@ func Disconnect(env map[string]string) {
 		os.Exit(1)
 	}
 
+	removeFromIPset(name, remote_ip, a_ip)
+
 	slog.Infof("Device[%s], Disconnected", show)
+}
+
+func removeFromIPset(name, as_item, ac_item string) {
+	sets_as, sets_ac := userIPset(name)
+
+	var shell string
+	for _, set := range sets_as {
+		shell += fmt.Sprintf("ipset del %s %s\n", set, as_item)
+	}
+	for _, set := range sets_ac {
+		shell += fmt.Sprintf("ipset del %s %s\n", set, ac_item)
+	}
+	if len(shell) > 0 {
+		exec.Command("/bin/sh", "-c", shell).Run()
+	}
 }

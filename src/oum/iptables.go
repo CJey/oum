@@ -77,19 +77,22 @@ EOF
 }
 
 define_ipset() {
-    name="$1"
-    shift
-    ipset create $name hash:net
-    for cidr in $*; do
-        ipset add $name $cidr
+    setname="$1"
+    settype="$2"
+    shift 2
+    ipset create $setname $settype
+    for item in $*; do
+        ipset add $setname $item
     done
 }
 
 define_ipset_from_file() {
-    name="$1"
-    iplist="$2"
-    ipset create $name hash:net
-    grep -vP '^\s*(#|$)' $iplist | sed -nr "s/^(.+)\$/add $name \1/p" | ipset -exist restore
+    setname="$1"
+    settype="$2"
+    itemlist="$3"
+    ipset create $setname $settype
+    [ -f $itemlist ] || return
+    grep -vP '^\s*(#|$)' $itemlist | sed -nr "s/^(.+)\$/add $setname \1/p" | ipset -exist restore
 }
 
 traffic_from_ipset() {
@@ -177,12 +180,12 @@ iptables_init
 
 #@@@@@@@@@@@@@@@@@@ <Customize> @@@@@@@@@@@@@@@@@@@
 
-#define_ipset <set name> cidr ...
-#define_ipset_from_file <set name> <cidrs list file path, one cidr one line>
+#define_ipset <set name> <set type> [item] ...
+#define_ipset_from_file <set name> <set type> [items list file path, one item one line]
 
 # WARNING!!! Define sets first
-define_ipset vpn      192.168.94.0/24
-define_ipset localnet 192.168.0.0/24 192.168.1.0/24
+define_ipset vpn      hash:net 192.168.94.0/24
+define_ipset localnet hash:net 192.168.0.0/24 192.168.1.0/24
 #--------------------------------------------------
 # Rules
 #traffic_from_ipset <set name> <callback, func or executable>

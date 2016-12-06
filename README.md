@@ -2,6 +2,14 @@
 
 An OpenVPN User Management utility
 
+## Compile
+
+Depends: linux, golang, git, build-essential, INTERNET(first)
+
+Compile: ./build oum
+
+Run: ./bin/oum
+
 ## Summary
 
 Begin with oum, just follow `oum guide`

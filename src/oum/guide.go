@@ -36,10 +36,17 @@ func guide() {
 	fmt.Printf("3. add the script 'startup' to execute at server boot\n")
 	fmt.Printf("\n")
 
-	fmt.Printf("[Add Client]\n")
+	fmt.Printf("[Add Client - by cli]\n")
 	fmt.Printf("# generate client conffile pair to interface 'oum', ref command: oum serv\n")
 	fmt.Printf("1. oum pattern --dev oum --out client.conf\n")
 	fmt.Printf("2. pass the client.conf to user cjey\n")
 	fmt.Printf("3. cjey use openvpn client import the client.conf\n")
+	fmt.Printf("4. cjey login, when ask for username/password, get the otp code, then input username <cjey> and the password <otp code>\n")
+	fmt.Printf("\n")
+
+	fmt.Printf("[Add Client - by gui\n")
+	fmt.Printf("1. oum web\n")
+	fmt.Printf("2. let user cjey access the web served by oum\n")
+	fmt.Printf("3. download configuration file from the web, and import the file\n")
 	fmt.Printf("4. cjey login, when ask for username/password, get the otp code, then input username <cjey> and the password <otp code>\n")
 }

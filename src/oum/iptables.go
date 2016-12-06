@@ -83,7 +83,7 @@ define_ipset_from_file() {
 
 traffic_from_ipset() {
     name="$1"
-    handler="$2"
+    callback="$2"
     match="-m set --match-set $name src"
     [ "$name" = "unspec" ] && match=
     iptables -t filter -N input_from_$name
@@ -95,7 +95,7 @@ traffic_from_ipset() {
 
     iptables -t filter -A forward_from_$name -m conntrack --ctstate DNAT -j ACCEPT_NAT
 
-    $handler input_from_$name forward_from_$name dnat_from_$name
+    $callback input_from_$name forward_from_$name dnat_from_$name
 }
 
 iptables_init() {
@@ -124,7 +124,8 @@ iptables_init() {
 }
 
 #--------------------------------------------------
-__from_sample() {
+
+__traffic_from_sample() {
     INPUT=$1
     FORWARD=$2
     PREROUTING=$3
@@ -152,7 +153,26 @@ __from_sample() {
     # allow <sample> access my tcp:12345, and dnat the traffic to 1.2.3.4:54321
     iptables -t nat -A $PREROUTING -m addrtype --dst-type LOCAL -p tcp --dport 12345 -j DNAT --to 1.2.3.4:54321
 }
+
 #--------------------------------------------------
+# clean iptables first, then clean ipset
+iptables_clean
+ipset_clean
+
+# install base iptables skeleton
+iptables_init
+#--------------------------------------------------
+
+#@@@@@@@@@@@@@@@@@@ <Customize> @@@@@@@@@@@@@@@@@@@
+# Define sets first
+#define_ipset <set name> cidr ...
+#define_ipset_from_file <set name> <cidrs list file path, one cidr one line>
+
+define_ipset vpn      192.168.94.0/24
+define_ipset localnet 192.168.1.0/24
+#--------------------------------------------------
+# Rules
+#traffic_from_ipset <set name> <callback, func or executable>
 
 traffic_from_vpn() {
     INPUT=$1
@@ -170,6 +190,10 @@ traffic_from_vpn() {
     # allow vpn access any other(localnet & Internet), and do NAT
     iptables -t filter -A $FORWARD -j ACCEPT_NAT
 }
+
+traffic_from_ipset vpn traffic_from_vpn
+
+#----
 
 traffic_from_localnet() {
     INPUT=$1
@@ -191,6 +215,16 @@ traffic_from_localnet() {
     iptables -t filter -A $FORWARD -j ACCEPT_NAT
 }
 
+traffic_from_ipset localnet traffic_from_localnet
+
+#----
+
+# "unspec" is a spcial ipset
+# means any other networks not matched in the given Rules order
+# generally, it means Internet traffic
+
+# WARNING: Always let unspec at the end
+
 traffic_from_unspec() {
     INPUT=$1
     FORWARD=$2
@@ -203,37 +237,7 @@ traffic_from_unspec() {
     iptables -t filter -A $INPUT -j ACCEPT -p icmp --icmp-type echo-request # ping
 }
 
-#--------------------------------------------------
-# clean iptables first, then clean ipset
-iptables_clean
-ipset_clean
-
-# install base iptables skeleton
-iptables_init
-
-#@@@@@@@@@@@@@@@@@@ <Customize> @@@@@@@@@@@@@@@@@@@
-# Define sets
-
-define_ipset vpn      192.168.94.0/24
-define_ipset localnet 192.168.1.0/24
-
-#define_ipset <set name> cidr ...
-#define_ipset_from_file <set name> <cidrs list file path, one cidr one line>
-
-#--------------------------------------------------
-# Rules
-
-traffic_from_ipset vpn      traffic_from_vpn
-traffic_from_ipset localnet traffic_from_localnet
-
-#traffic_from_ipset <set name> <set rules func or executable>
+traffic_from_ipset unspec traffic_from_unspec
 
 #@@@@@@@@@@@@@@@@@ </Customize> @@@@@@@@@@@@@@@@@@@
-
-# "unspec" is a spcial ipset
-# means any other networks not matched in the given Rules order
-# generally, it means Internet traffic
-
-# WARNING: Always let unspec at the end
-traffic_from_ipset unspec traffic_from_unspec
 `

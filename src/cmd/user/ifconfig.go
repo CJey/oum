@@ -133,7 +133,13 @@ func ifconfigShow(name, device string) {
 		}
 		fmt.Printf("Device: %s%%%s\n", name, dvc)
 		fmt.Printf("Interface: %s\n", dev)
+		if len(ip) == 0 {
+			ip = "dhcp"
+		}
 		fmt.Printf("IP: %s\n", ip)
+		if len(dns) == 0 {
+			dns = "dhcp"
+		}
 		fmt.Printf("DNS: %s\n", dns)
 		fmore = true
 		return nil

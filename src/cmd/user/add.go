@@ -158,6 +158,16 @@ func addDevice(name string, device string) {
 		os.Exit(1)
 	}
 
+	// insert ifconfig
+	_, err = tx.Exec(`
+        insert into ifconfig (username, device, ovpn_dev)
+        values (?, ?, '')
+    `, name, device)
+	if err != nil {
+		slog.Emergf(err.Error())
+		os.Exit(1)
+	}
+
 	err = tx.Commit()
 	if err != nil {
 		slog.Emergf(err.Error())

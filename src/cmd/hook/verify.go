@@ -166,7 +166,7 @@ func Verify(env map[string]string, authPath string) {
 	// last_code verify
 	if last_code != code {
 		slog.Warningf("Device[%s], OTP Code dismatch", show)
-		return
+		os.Exit(1)
 	}
 
 	sameip := time.Hour * 24 * 15  // 15days

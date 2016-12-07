@@ -76,6 +76,8 @@ func main() {
 		config["ipset-assign"] = conf.Set.IPsetAssign
 		config["ipset-access"] = conf.Set.IPsetAccess
 		user.Set(conf.Set.Username, config)
+	case conf.Ifconfig.FullCommand:
+		user.Ifconfig(conf.Ifconfig.Username, conf.Ifconfig.Dev, conf.Ifconfig.Config...)
 	case conf.Show.FullCommand:
 		user.Show(conf.Show.Username)
 	case conf.Enable.FullCommand:

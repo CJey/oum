@@ -2,6 +2,13 @@
 
 An OpenVPN User Management utility
 
+1. use oum to generate openvpn tls/password mode server configuration quicklly
+1. use oum to generate a pattern script, then manage your iptables more easilly
+1. use oum to guide user download openvpn client and configuration file easilly by a simple web(chinese support only)
+1. use oum as openvpn server configuration hook, then verify user, assign ip by oum
+1. oum support 8 digits otp as user authentication method, and this is default
+1. oum support ip whitelist, domain whitelist, city whitelist to restrict user login
+
 ## Compile
 
 Depends: linux, golang, git, build-essential, INTERNET(first)
@@ -35,6 +42,18 @@ Oum encourage using OTP Code to verify
 * oum add `[<flags>] <username> [<password>]`
 
     Add user/device
+
+* oum set `[<flags>] [<username>]`
+
+    Update user config
+
+* oum ifconfig `[<flags>] <username> [<config pair>...]`
+
+    Assign/Show static ip and dns to user
+
+* oum show `[<username>]`
+
+    Show user config
 
 * oum del `<username>`
 

@@ -56,6 +56,14 @@ var Set struct {
 	IPsetAccess string
 }
 
+var Ifconfig struct {
+	FullCommand string
+
+	Username string
+	Dev      string
+	Config   []string
+}
+
 var Show struct {
 	FullCommand string
 
@@ -168,6 +176,7 @@ func init() {
 	List.Usernames = []string{}
 	Table.Names = []string{}
 	Ipset.Sets = []string{}
+	Ifconfig.Config = []string{}
 }
 
 func parseFlags() {
@@ -212,22 +221,35 @@ func parseFlags() {
 	cmdSet := kingpin.Command("set", "Update user config")
 	Set.FullCommand = cmdSet.FullCommand()
 	cmdSet.Arg("username", "which username do you want update").
+		Required().
 		StringVar(&Set.Username)
-	cmdSet.Flag("allow-net", "update allow_net, format: csv, with first char '+' means union, with first char '-' means diff, otherwise means override; as dash '-' is a reserved word, you can given param like this: --allow-net=-192.168.1.0/24").
+	cmdSet.Flag("allow-net", "access ip whitelist, format: csv, with first char '+' means union, with first char '-' means diff, otherwise means override; as dash '-' is a reserved word, you can given param like this: --allow-net=-192.168.1.0/24").
 		StringVar(&Set.AllowNet)
-	cmdSet.Flag("allow-domain", "update allow_domain, format: ref allow-net").
+	cmdSet.Flag("allow-domain", "access domain whitelist(useful with ddns), format: ref allow-net").
 		StringVar(&Set.AllowDomain)
-	cmdSet.Flag("allow-city", "update allow_city, format: ref allow-net").
+	cmdSet.Flag("allow-city", "access city whitelist, format: ref allow-net").
 		StringVar(&Set.AllowCity)
-	cmdSet.Flag("ipset-assign", "update ipset_assign, format: ref allow-net").
+	cmdSet.Flag("ipset-assign", "ipset name which store openvpn assigned ip, format: ref allow-net").
 		StringVar(&Set.IPsetAssign)
-	cmdSet.Flag("ipset-access", "update ipset_access, format: ref allow-net").
+	cmdSet.Flag("ipset-access", "ipset name which store client access ip, format: ref allow-net").
 		StringVar(&Set.IPsetAccess)
+
+		// ifconfig
+	cmdIfconfig := kingpin.Command("ifconfig", "Assign/Show static ip and dns to user")
+	Ifconfig.FullCommand = cmdIfconfig.FullCommand()
+	cmdIfconfig.Arg("username", "which username do you want config").
+		Required().
+		StringVar(&Ifconfig.Username)
+	cmdIfconfig.Arg("config pair", "support ip=<static ip> dns=<dns1>,<dns2>,...").
+		StringsVar(&Ifconfig.Config)
+	cmdIfconfig.Flag("dev", "interface name, if oum served more than one server").
+		StringVar(&Ifconfig.Dev)
 
 		// show
 	cmdShow := kingpin.Command("show", "Show user config")
 	Show.FullCommand = cmdShow.FullCommand()
 	cmdShow.Arg("username", "which username do you want show").
+		Required().
 		StringVar(&Show.Username)
 
 	// reset
@@ -265,7 +287,7 @@ func parseFlags() {
 		StringVar(&Reconnect.Username)
 
 		// verify
-	cmdVerify := kingpin.Command("verify", "Verify user")
+	cmdVerify := kingpin.Command("verify", "Helper: Verify user")
 	Verify.FullCommand = cmdVerify.FullCommand()
 	cmdVerify.Arg("username", "which user/device do you want to verify").Required().
 		StringVar(&Verify.Username)
@@ -282,7 +304,7 @@ func parseFlags() {
 	cmdTable.Arg("names", "which tables do you want to see").StringsVar(&Table.Names)
 
 	// pattern
-	cmdPattern := kingpin.Command("pattern", "Helper, depends openssl: Show pattern openvpn server configuration file")
+	cmdPattern := kingpin.Command("pattern", "Helper: Show pattern openvpn server configuration file")
 	Pattern.FullCommand = cmdPattern.FullCommand()
 	cmdPattern.Flag("quick", "use all default").
 		BoolVar(&Pattern.Quick)
@@ -304,7 +326,7 @@ func parseFlags() {
 		StringVar(&Iptables.Out)
 
 	// ipset
-	cmdIpset := kingpin.Command("ipset", "Helper: resolve dns to set ipset")
+	cmdIpset := kingpin.Command("ipset", "Helper: Resolve dns to set ipset")
 	Ipset.FullCommand = cmdIpset.FullCommand()
 	cmdIpset.Flag("interval", "default 0, run just one time, unit: second").
 		UintVar(&Ipset.Interval)

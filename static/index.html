@@ -28,7 +28,7 @@
         <div>0. 最常用的方式即为“用户名+otp code”登录，没有高级需求请务必忽略以下说明，避免产生困惑</div>
         <div>1. username的表述格式为：[!]&lt;user&gt;[%&lt;device&gt], 感叹号用于告知服务器不要修改本机的默认网关和默认dns, 百分号用于分隔用户和设备, device不指定则表示默认设备（设备名default）</div>
         <div>2. password的表述格式为：[&lt;otp code&gt;][%&lt;static password&gt;]，支持三种组合，即"仅code", "仅static", "code + static"，OUM默认支持"仅code"，如果用户启用了static，使用static时必须要在static开头加上%</div>
-        <div>3. 同一配置下，同一user的同一device仅允许同时在线一个连接</div>
+        <div>3. 同一user的同一device仅允许同时在线一个连接（即使使用不用的配置）</div>
         <div>4. 用户默认仅有一个设备，即默认设备default，经管理员许可后，可以创建额外的设备</div>
         <p />
         <div><b>Tips:</b></div>

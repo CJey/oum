@@ -49,7 +49,7 @@ func Connect(env map[string]string, dconfPath string) {
 	DB := db.Get()
 
 	rows, err := DB.Query(`
-        select device,ovpn_dev,ip,netmask,gateway,routes,dns from ifconfig
+        select ovpn_dev,device,ip,netmask,gateway,routes,dns from ifconfig
         where username=?
     `, name)
 	if err != nil && err != sql.ErrNoRows {
@@ -62,8 +62,8 @@ func Connect(env map[string]string, dconfPath string) {
 		var hit, a, b, c, d []string
 		hit = []string{static, netmask, gateway, route, dns}
 		err = db.RangeRows(rows, func() error {
-			var dvc, cdev string
-			err := rows.Scan(&dvc, &dev, &static, &netmask, &gateway, &route, &dns)
+			var cdev, dvc string
+			err := rows.Scan(&cdev, &dvc, &static, &netmask, &gateway, &route, &dns)
 			if err != nil {
 				return err
 			}
@@ -171,6 +171,9 @@ func Connect(env map[string]string, dconfPath string) {
 			isp = iip.ISP()
 		}
 	}
+
+	user.DisconnectDevice(name, device)
+
 	tx, err := DB.Begin()
 	if err != nil {
 		slog.Emerg(err.Error())

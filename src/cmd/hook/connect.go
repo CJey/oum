@@ -47,24 +47,52 @@ func Connect(env map[string]string, dconfPath string) {
 
 	// fetch ifconfig
 	DB := db.Get()
-	var static, netmask, gateway, route, dns string
-	err = DB.QueryRow(`
-        select ip,netmask,gateway,routes,dns from ifconfig
-        where username=? and device=? and ovpn_dev=?
-    `, name, device, dev).Scan(&static, &netmask, &gateway, &route, &dns)
+
+	rows, err := DB.Query(`
+        select device,ovpn_dev,ip,netmask,gateway,routes,dns from ifconfig
+        where username=?
+    `, name)
 	if err != nil && err != sql.ErrNoRows {
 		slog.Emerg(err.Error())
 		os.Exit(1)
 	}
-	if err == sql.ErrNoRows {
-		err = DB.QueryRow(`
-            select ip,netmask,gateway,routes,dns from ifconfig
-            where username=? and device='' and ovpn_dev=?
-        `, name, dev).Scan(&static, &netmask, &gateway, &route, &dns)
-		if err != nil && err != sql.ErrNoRows {
-			slog.Emerg(err.Error())
+
+	var static, netmask, gateway, route, dns string
+	if err == nil {
+		var hit, a, b, c, d []string
+		hit = []string{static, netmask, gateway, route, dns}
+		err = db.RangeRows(rows, func() error {
+			var dvc, cdev string
+			err := rows.Scan(&dvc, &dev, &static, &netmask, &gateway, &route, &dns)
+			if err != nil {
+				return err
+			}
+			if cdev == dev && dvc == device {
+				a = []string{static, netmask, gateway, route, dns}
+			} else if cdev == dev && dvc == "" {
+				b = []string{static, netmask, gateway, route, dns}
+			} else if cdev == "" && dvc == device {
+				c = []string{static, netmask, gateway, route, dns}
+			} else if cdev == "" && dvc == "" {
+				d = []string{static, netmask, gateway, route, dns}
+			}
+			return nil
+		})
+		if err != nil {
+			slog.Emergf(err.Error())
 			os.Exit(1)
 		}
+		switch {
+		case len(a) > 0:
+			hit = a
+		case len(b) > 0:
+			hit = b
+		case len(c) > 0:
+			hit = c
+		case len(d) > 0:
+			hit = d
+		}
+		static, netmask, gateway, route, dns = hit[0], hit[1], hit[2], hit[3], hit[4]
 	}
 
 	remote_ip := ifconfig_pool_remote_ip

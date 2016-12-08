@@ -8,7 +8,7 @@ fi
 _ROOT="$(pwd)" && cd "$(dirname "$0")" && ROOT="$(pwd)"
 EXE_DEFAULT=/usr/local/go/bin/go
 EXE=go
-VERSION=0.13
+VERSION=0.14
 
 if ! which $EXE >/dev/null ; then
     if [ -x $EXE_DEFAULT ]; then

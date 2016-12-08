@@ -43,11 +43,11 @@ Oum encourage using OTP Code to verify
 
     Add user/device
 
-* oum set `[<flags>] [<username>]`
+* oum set `[<flags>] [<username>] [<configs>...]`
 
     Update user config
 
-* oum ifconfig `[<flags>] <username> [<config pair>...]`
+* oum ifconfig `[<flags>] <username> [<configs>...]`
 
     Assign/Show static ip and dns to user
 

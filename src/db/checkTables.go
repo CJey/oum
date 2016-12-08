@@ -18,6 +18,7 @@ var ts map[string]table = map[string]table{
 	tIfconfig{}.Name(): tIfconfig{},
 	tActive{}.Name():   tActive{},
 	tOVPN{}.Name():     tOVPN{},
+	tConfig{}.Name():   tConfig{},
 	tLog{}.Name():      tLog{},
 	tIPCache{}.Name():  tIPCache{},
 }

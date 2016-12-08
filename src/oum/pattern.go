@@ -48,8 +48,6 @@ func getOUM(gw string, quick bool) string {
 			continue
 		}
 		return fmt.Sprintf("# use setenv to control oum\n") +
-			fmt.Sprintf("#setenv oum_sameip   1296000 # 15days\n") +
-			fmt.Sprintf("#setenv oum_samecity 604800 # 7days\n") +
 			fmt.Sprintf("#setenv oum_gateway  %s\n", gw) +
 			fmt.Sprintf("#setenv oum_dns      %s # support csv\n", gw) +
 			fmt.Sprintf("\n") +

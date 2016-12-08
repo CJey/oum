@@ -108,6 +108,12 @@ func GetDefaultConfig() map[string]string {
 		slog.Emergf(err.Error())
 		os.Exit(1)
 	}
+	if len(res["otp.sameip"]) == 0 {
+		res["otp.sameip"] = fmt.Sprintf("%d", 60*60*24*15)
+	}
+	if len(res["otp.samecity"]) == 0 {
+		res["otp.samecity"] = fmt.Sprintf("%d", 60*60*24*7)
+	}
 	return res
 }
 

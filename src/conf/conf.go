@@ -216,7 +216,7 @@ func parseFlags() {
 		StringVar(&Add.Password)
 
 		// set
-	cmdSet := kingpin.Command("set", "Update user config")
+	cmdSet := kingpin.Command("set", "Update user config, use 'oum table user' to know more about config")
 	Set.FullCommand = cmdSet.FullCommand()
 	cmdSet.Flag("default", "update default config for everyone").
 		BoolVar(&Set.Def)

@@ -120,10 +120,10 @@ func GetDefaultConfig() map[string]string {
 func GetFinalConfig(name string) map[string]string {
 	def := GetDefaultConfig()
 	user := GetUserConfig(name)
-	for k, _ := range def {
-		if len(user[k]) > 0 {
-			def[k] = user[k]
+	for k, v := range user {
+		if len(v) == 0 {
+			user[k] = def[k]
 		}
 	}
-	return def
+	return user
 }

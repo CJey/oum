@@ -241,7 +241,7 @@ func getIfconfig(quick bool) (string, string) {
 				continue
 			}
 			ones, bits := net.IPMask(net.ParseIP(res[2]).To4()).Size()
-			if ones|bits == 0 {
+			if ones+bits == 0 {
 				fmt.Printf("%s invalid network mask(%s)\n", errpre, res[2])
 				help()
 				continue

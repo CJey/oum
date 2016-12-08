@@ -52,7 +52,7 @@ func (ip *IP) SameISP(cmp *IP) bool {
 }
 
 func (ip *IP) Province() string {
-	return ip.country + ">" + ip.province
+	return ip.country + "/" + ip.province
 }
 
 func (ip *IP) SameCity(cmp *IP) bool {
@@ -65,7 +65,7 @@ func (ip *IP) SameCity(cmp *IP) bool {
 }
 
 func (ip *IP) City() string {
-	return ip.country + ">" + ip.province + ">" + ip.city
+	return ip.country + "/" + ip.province + "/" + ip.city
 }
 
 func (ip *IP) ISP() string {

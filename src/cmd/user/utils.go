@@ -4,6 +4,7 @@ import (
 	"crypto/hmac"
 	"crypto/rand"
 	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"regexp"
 	"strings"
@@ -51,7 +52,11 @@ func MatchPassword(pass, target string) bool {
 	if len(tmp) < 2 {
 		return false
 	}
-	mac := hmac.New(sha256.New, []byte(tmp[0]))
+	salt, err := hex.DecodeString(tmp[0])
+	if err != nil {
+		return false
+	}
+	mac := hmac.New(sha256.New, salt)
 	mac.Write([]byte(target))
-	return tmp[1] == string(mac.Sum(nil))
+	return tmp[1] == fmt.Sprintf("%x", mac.Sum(nil))
 }

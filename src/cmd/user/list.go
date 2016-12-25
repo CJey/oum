@@ -47,7 +47,7 @@ func List(usernames ...string) {
 		}
 
 		if f_split {
-			fmt.Printf("--------\n")
+			fmt.Printf("----\n")
 		}
 		f_split = true
 

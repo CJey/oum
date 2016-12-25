@@ -25,40 +25,34 @@ func CSVSet(set string) []string {
 }
 
 func SetOp(origin string, op string) string {
+	if len(op) == 0 {
+		return origin
+	}
+
+	mode := op[0]
+	op = op[1:]
+
 	a := CSVSet(origin)
-
-	mode := 0
-	if len(op) > 0 {
-		switch op[0] {
-		case '+':
-			mode = 1
-			op = op[1:]
-		case '-':
-			mode = -1
-			op = op[1:]
-		}
-	} else {
-		return strings.Join(a, ",")
-	}
-
 	b := CSVSet(op)
-	if mode == 0 {
-		return strings.Join(b, ",")
-	}
 
 	r_a := map[string]struct{}{}
 	for _, i := range a {
 		r_a[i] = struct{}{}
 	}
 
-	if mode > 0 {
+	switch mode {
+	case '+':
 		for _, i := range b {
 			r_a[i] = struct{}{}
 		}
-	} else {
+	case '-':
 		for _, i := range b {
 			delete(r_a, i)
 		}
+	case '=':
+		return strings.Join(b, ",")
+	default:
+		return strings.Join(a, ",")
 	}
 
 	res := make([]string, 0, len(r_a))

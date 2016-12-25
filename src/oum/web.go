@@ -35,7 +35,7 @@ func getWebCert() tls.Certificate {
 		}
 		return crt
 	}
-	if len(cert)|len(key) == 0 {
+	if len(cert)+len(key) == 0 {
 		cert = "/var/lib/oum/web.crt"
 		key = "/var/lib/oum/web.key"
 		_, cerr := os.Stat(cert)

@@ -59,13 +59,15 @@ func Verify(env map[string]string, authPath string) {
 	}
 	defer tx.Rollback()
 
+	config := user.GetFinalConfig(name)
+
 	// user exists/expired check
-	var pass, secret, a_net, a_domain, a_city string
+	var pass, secret string
 	var expired time.Time
 	err = tx.QueryRow(`
-        select password,secret,expired,allow_net,allow_domain,allow_city from user
+        select password,secret,expired from user
         where username=?
-    `, name).Scan(&pass, &secret, &expired, &a_net, &a_domain, &a_city)
+    `, name).Scan(&pass, &secret, &expired)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			slog.Warningf("User[%s], Account not found", name)
@@ -106,10 +108,10 @@ func Verify(env map[string]string, authPath string) {
 	}
 
 	// access scope check
-	if len(a_net)+len(a_domain)+len(a_city) != 0 {
-		if inet, ok := allowNet(ip, a_net); !ok {
-			if domain, ok := allowDomain(ip, a_domain); !ok {
-				if city, ok := allowCity(ip, a_city); !ok {
+	if len(config["allow.net"])+len(config["allow.domain"])+len(config["allow.city"]) != 0 {
+		if inet, ok := allowNet(ip, config["allow.net"]); !ok {
+			if domain, ok := allowDomain(ip, config["allow.domain"]); !ok {
+				if city, ok := allowCity(ip, config["allow.city"]); !ok {
 					slog.Warningf("User[%s], Access scope denied", name)
 					os.Exit(1)
 				} else {
@@ -171,13 +173,13 @@ func Verify(env map[string]string, authPath string) {
 
 	sameip := time.Hour * 24 * 15  // 15days
 	samecity := time.Hour * 24 * 7 // 7days
-	if sec := env["oum_sameip"]; len(sec) > 0 {
+	if sec := config["otp.sameip"]; len(sec) > 0 {
 		i, err := strconv.ParseUint(sec, 0, 64)
 		if err == nil {
 			sameip = time.Duration(i) * time.Second
 		}
 	}
-	if sec := env["oum_samecity"]; len(sec) > 0 {
+	if sec := config["otp.samecity"]; len(sec) > 0 {
 		i, err := strconv.ParseUint(sec, 0, 64)
 		if err == nil {
 			samecity = time.Duration(i) * time.Second

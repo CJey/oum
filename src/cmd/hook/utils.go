@@ -14,7 +14,7 @@ import (
 func userIPset(name string) (sets_as, sets_ac []string) {
 	var assign, access string
 	err := db.Get().QueryRow(`
-        select ipset_assign,ipset_access from user
+        select "ipset.assign","ipset.access" from user
         where username=?
     `, name).Scan(&assign, &access)
 	if err != nil {

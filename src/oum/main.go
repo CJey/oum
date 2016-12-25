@@ -69,13 +69,7 @@ func main() {
 			conf.Reset.RandomPass,
 		)
 	case conf.Set.FullCommand:
-		config := make(map[string]string)
-		config["allow-net"] = conf.Set.AllowNet
-		config["allow-domain"] = conf.Set.AllowDomain
-		config["allow-city"] = conf.Set.AllowCity
-		config["ipset-assign"] = conf.Set.IPsetAssign
-		config["ipset-access"] = conf.Set.IPsetAccess
-		user.Set(conf.Set.Username, config)
+		user.Set(conf.Set.Def, conf.Set.Username, conf.Set.Config...)
 	case conf.Ifconfig.FullCommand:
 		user.Ifconfig(conf.Ifconfig.Username, conf.Ifconfig.Dev, conf.Ifconfig.Config...)
 	case conf.Show.FullCommand:

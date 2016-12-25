@@ -37,11 +37,21 @@ func StdPassword(password string) (code string, pass string) {
 	return
 }
 
-func hashPassword(pass string) string {
+func HashPassword(pass string) string {
 	salt := make([]byte, 8)
 	rand.Read(salt)
 	mac := hmac.New(sha256.New, salt)
 	mac.Write([]byte(pass))
 	res := mac.Sum(nil)
 	return fmt.Sprintf("%x:%x", salt, res)
+}
+
+func MatchPassword(pass, target string) bool {
+	tmp := strings.SplitN(pass, ":", 2)
+	if len(tmp) < 2 {
+		return false
+	}
+	mac := hmac.New(sha256.New, []byte(tmp[0]))
+	mac.Write([]byte(target))
+	return tmp[1] == string(mac.Sum(nil))
 }

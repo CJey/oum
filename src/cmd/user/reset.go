@@ -61,12 +61,12 @@ func Reset(username string, password string, disableotp, randompass bool) {
 			slog.Emergf("Invalid password format, too short")
 			os.Exit(1)
 		}
-		password = hashPassword(password)
+		password = HashPassword(password)
 	} else if randompass {
 		tmp := make([]byte, 15)
 		rand.Read(tmp)
 		plain := base64.StdEncoding.EncodeToString(tmp)
-		password = hashPassword(plain)
+		password = HashPassword(plain)
 		fmt.Printf("Password = %s\n", plain)
 		fmt.Printf("\n------------------------------------------------\n\n")
 	}

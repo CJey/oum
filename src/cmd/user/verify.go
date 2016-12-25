@@ -83,7 +83,7 @@ func Verify(username string, password string) {
 	}
 	code, pwd := StdPassword(password)
 	if len(pass) > 0 {
-		if pass != pwd {
+		if !MatchPassword(pass, pwd) {
 			slog.Warningf("Password dismatch")
 			os.Exit(1)
 		}

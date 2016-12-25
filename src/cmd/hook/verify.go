@@ -130,7 +130,7 @@ func Verify(env map[string]string, authPath string) {
 	}
 	code, pwd := user.StdPassword(password)
 	if len(pass) > 0 {
-		if pass != pwd {
+		if !user.MatchPassword(pass, pwd) {
 			slog.Warningf("User[%s], Password dismatch", name)
 			os.Exit(1)
 		}

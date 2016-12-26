@@ -37,6 +37,7 @@ func (t tIfconfig) history() map[uint][]string {
 			"gateway text not null default '', -- 指定网关，留空表示使用默认网关，即openvpn local peer的IP",
 			"routes text not null default '', -- 推送到客户端的路由网络，CIDR格式，多个用逗号分割(csv): push <cidr> vpn_gateway",
 			"dns text not null default '', -- 指定dns，多个dns用逗号分割，留空表示使用默认dns，即openvpn local peer的IP",
+			"iroutes text not null default '', -- 客户端所连接的网络，CIDR格式，多个用逗号分割(csv): iroute <cidr>",
 			"primary key(username,device,ovpn_dev)",
 		},
 	}

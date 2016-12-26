@@ -49,7 +49,7 @@ func Connect(env map[string]string, dconfPath string) {
 	DB := db.Get()
 
 	rows, err := DB.Query(`
-        select ovpn_dev,device,ip,netmask,gateway,routes,dns from ifconfig
+        select ovpn_dev,device,ip,netmask,gateway,routes,dns,iroutes from ifconfig
         where username=?
     `, name)
 	if err != nil && err != sql.ErrNoRows {
@@ -57,24 +57,24 @@ func Connect(env map[string]string, dconfPath string) {
 		os.Exit(1)
 	}
 
-	var static, netmask, gateway, route, dns string
+	var static, netmask, gateway, route, dns, iroute string
 	if err == nil {
 		var hit, a, b, c, d []string
-		hit = []string{static, netmask, gateway, route, dns}
+		hit = []string{static, netmask, gateway, route, dns, iroute}
 		err = db.RangeRows(rows, func() error {
 			var cdev, dvc string
-			err := rows.Scan(&cdev, &dvc, &static, &netmask, &gateway, &route, &dns)
+			err := rows.Scan(&cdev, &dvc, &static, &netmask, &gateway, &route, &dns, &iroute)
 			if err != nil {
 				return err
 			}
 			if cdev == dev && dvc == device {
-				a = []string{static, netmask, gateway, route, dns}
+				a = []string{static, netmask, gateway, route, dns, iroute}
 			} else if cdev == dev && dvc == "" {
-				b = []string{static, netmask, gateway, route, dns}
+				b = []string{static, netmask, gateway, route, dns, iroute}
 			} else if cdev == "" && dvc == device {
-				c = []string{static, netmask, gateway, route, dns}
+				c = []string{static, netmask, gateway, route, dns, iroute}
 			} else if cdev == "" && dvc == "" {
-				d = []string{static, netmask, gateway, route, dns}
+				d = []string{static, netmask, gateway, route, dns, iroute}
 			}
 			return nil
 		})
@@ -92,7 +92,7 @@ func Connect(env map[string]string, dconfPath string) {
 		case len(d) > 0:
 			hit = d
 		}
-		static, netmask, gateway, route, dns = hit[0], hit[1], hit[2], hit[3], hit[4]
+		static, netmask, gateway, route, dns, iroute = hit[0], hit[1], hit[2], hit[3], hit[4], hit[5]
 	}
 
 	remote_ip := ifconfig_pool_remote_ip
@@ -141,6 +141,20 @@ func Connect(env map[string]string, dconfPath string) {
 			routes = append(routes, rr.IP.String()+" "+net.IP(rr.Mask).String())
 		}
 	}
+	var iroutes []string
+	if len(iroute) > 0 {
+		tmp := utils.CSVSet(iroute)
+		for _, r := range tmp {
+			if strings.Index(r, "/") < 0 {
+				r += "/32"
+			}
+			_, rr, err := net.ParseCIDR(r)
+			if err != nil || rr == nil {
+				continue
+			}
+			iroutes = append(iroutes, rr.IP.String()+" "+net.IP(rr.Mask).String())
+		}
+	}
 
 	// push ip
 	if len(static) > 0 {
@@ -150,6 +164,11 @@ func Connect(env map[string]string, dconfPath string) {
 	// push route
 	for _, route := range routes {
 		f.WriteString(fmt.Sprintf("push 'route %s %s'\n", route, gateway))
+	}
+
+	// config iroute
+	for _, iroute := range iroutes {
+		f.WriteString(fmt.Sprintf("iroute %s\n", iroute))
 	}
 
 	// redirect gateway

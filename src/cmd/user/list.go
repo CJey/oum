@@ -28,7 +28,7 @@ func List(usernames ...string) {
 	err = db.RangeRows(rows, func() error {
 		var name string
 		var expired time.Time
-		var login, uptime, bytes_sent, bytes_recv int
+		var login, uptime, bytes_sent, bytes_recv int64
 		err = rows.Scan(&name, &expired, &login, &uptime, &bytes_sent, &bytes_recv)
 		if err != nil {
 			return err
@@ -125,7 +125,7 @@ func List(usernames ...string) {
 	}
 }
 
-func human_bytes(ibytes int) string {
+func human_bytes(ibytes int64) string {
 	bytes := float64(ibytes)
 	switch {
 	case bytes/1e15 > 10:

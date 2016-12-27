@@ -18,7 +18,7 @@ func List() {
 		slog.Emergf(err.Error())
 		os.Exit(1)
 	}
-	var i int
+	var i int64
 	err = db.RangeRows(rows, func() error {
 		var dev, name, remote, port, conffile string
 		err = rows.Scan(&dev, &name, &remote, &port, &conffile)

@@ -62,7 +62,7 @@ func genSrvCert(key, cacrt, cakey, subj string) (crt string, err error) {
 	pkey := utils.Tmpfile(key)
 	defer utils.Rmtmp(pkey)
 	cmd := exec.Command(
-		"openssl", "req", "-new", "-days", "36500", "-nodes",
+		"openssl", "req", "-new", "-nodes",
 		"-key", pkey,
 		"-subj", "/"+subj,
 	)
@@ -82,6 +82,7 @@ func genSrvCert(key, cacrt, cakey, subj string) (crt string, err error) {
 	defer utils.Rmtmp(pserial)
 	cmd = exec.Command(
 		"openssl", "x509", "-req", "-sha256",
+		"-days", "36500",
 		"-CAserial", pserial,
 		"-CA", pcacrt,
 		"-CAkey", pcakey,

@@ -294,7 +294,7 @@ func parseFlags() {
 	cmdTable.Arg("names", "which tables do you want to see").StringsVar(&Table.Names)
 
 	// pattern
-	cmdPattern := kingpin.Command("pattern", "Helper: Show pattern openvpn server configuration file")
+	cmdPattern := kingpin.Command("pattern", "Helper: Show openvpn server configuration pattern")
 	Pattern.FullCommand = cmdPattern.FullCommand()
 	cmdPattern.Flag("quick", "use all default").
 		BoolVar(&Pattern.Quick)
@@ -318,7 +318,7 @@ func parseFlags() {
 	// ipset
 	cmdIpset := kingpin.Command("ipset", "Helper: Resolve dns to set ipset")
 	Ipset.FullCommand = cmdIpset.FullCommand()
-	cmdIpset.Flag("interval", "default 0, run just one time, unit: second").
+	cmdIpset.Flag("interval", "default 0(run just one time), unit: second").
 		UintVar(&Ipset.Interval)
 	cmdIpset.Arg("sets", "format: <set name>{=|+}domain[,domain...] ...").
 		Required().

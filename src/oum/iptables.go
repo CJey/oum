@@ -38,6 +38,14 @@ case "$CTRL" in
     ;;
 esac
 
+ipof() {
+    nslookup $1 | grep ^Address | grep -v '#' | awk '{print $2}' | head -n1
+}
+
+ipsof() {
+    nslookup $1 | grep ^Address | grep -v '#' | awk '{print $2}' | tr -s '\n' ' '
+}
+
 ipset_clean() {
     ipset list -n | xargs -I{} ipset destroy {}
 }
@@ -66,11 +74,6 @@ COMMIT
 COMMIT
 *raw
 :PREROUTING ACCEPT [0:0]
-:OUTPUT ACCEPT [0:0]
-COMMIT
-*security
-:INPUT ACCEPT [0:0]
-:FORWARD ACCEPT [0:0]
 :OUTPUT ACCEPT [0:0]
 COMMIT
 EOF
